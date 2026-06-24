@@ -42,8 +42,8 @@ class Device:
 
 # Configuration
 # Use the base URL, NOT the dashboard/3 path
-kuma_url = "http://100.123.12.64:3001"
-client = APIClient(kuma_url, "Master_Cracken", "StrongMe2453")
+kuma_url = "BASE URL"
+client = APIClient(kuma_url, "USERNAME", "PASSWORD")
 
 # Execution
 try:
@@ -61,8 +61,7 @@ try:
         print(f"DEBUG: {monitor.get('name')} data: {monitor}")
     # This loop now maps the API data to your terminal output
         print(f"Monitor: {m_name} | Status: {m_status}")
-    if "BrunchBox" in monitor.get('name', ''):
-        print(f"DEBUG DATA: {monitor}")
+
 except Exception as e:
     print(f"An error occurred: {e}")
 finally:
