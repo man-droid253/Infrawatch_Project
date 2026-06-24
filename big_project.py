@@ -5,49 +5,66 @@ def log_execution(func):
         return func(*args, **kwargs)
     return wrapper
 
+from uptime_kuma_api import UptimeKumaApi
+
+# Decorator for clean logging
+def log_execution(func):
+    def wrapper(*args, **kwargs):
+        print(f"--- [LOG] Initialising execution of: {func.__name__}")
+        return func(*args, **kwargs)
+    return wrapper
+
 class APIClient:
-    def __init__(self, base_url):
-        self.base_url = base_url
-    def fetch_data(self, endpoint):
-        url = f"{self.base_url}{endpoint}"
-        response = requests.get(url)
+    def __init__(self, url, username, password):
+        self.url = url
+        self.username = username
+        self.password = password
+        self.api = UptimeKumaApi(self.url)
 
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return None
-client=APIClient( "https://jsonplaceholder.typicode.com")
-users = client.fetch_data("/users")
+    def connect(self):
+        self.api.login(self.username, self.password)
 
+    def get_monitor_status(self):
+        return self.api.get_monitors()
 
-
+    def disconnect(self):
+        self.api.disconnect()
 
 class Device:
-    def __init__(self, name, ip_address, ):
-        self.name =  name
+    def __init__(self, name, ip_address):
+        self.name = name
         self.ip_address = ip_address
-        self.status= "Unknown"
+        self.status = "Unknown"
+
     @log_execution
     def get_info(self):
-        return f"{self.name} {self.ip_address} {self.status}"
+        return f"{self.name} ({self.ip_address}) - Status: {self.status}"
 
-class Monitor:
-    def __init__(self, device, api_client):
-        self.device = device  #Now monito has a device
-        self.api_client = api_client# now monitor has an api tool
-    @log_execution
-    def check_status(self):
-        print(f"Checking status for: {self.device.name}...")
+# Configuration
+# Use the base URL, NOT the dashboard/3 path
+kuma_url = "http://100.123.12.64:3001"
+client = APIClient(kuma_url, "Master_Cracken", "StrongMe2453")
 
-my_server = Device("Infrawatch_server", "192.168.1.50")
-my_monitor= Monitor(my_server, client)
+# Execution
+try:
+    client.connect()
+    monitors = client.get_monitor_status()
 
-print(my_monitor.check_status())
+    # Example: Print the status of the first monitor found
+    if monitors:
+        print(f"Successfully connected! Found {len(monitors)} monitors.")
 
-print (my_server.get_info())
-if users:
-    for user in users:
-        print(f" User: {user['name'] } | City: {user['address']['city']}")
+    for monitor in monitors:
 
-else:
-    print("failed to retrieve data")
+        m_name = monitor.get('name', '').strip()
+        m_status = monitor.get('status', 'Unknown')
+        print(f"DEBUG: {monitor.get('name')} data: {monitor}")
+    # This loop now maps the API data to your terminal output
+        print(f"Monitor: {m_name} | Status: {m_status}")
+    if "BrunchBox" in monitor.get('name', ''):
+        print(f"DEBUG DATA: {monitor}")
+except Exception as e:
+    print(f"An error occurred: {e}")
+finally:
+    client.disconnect()
+
