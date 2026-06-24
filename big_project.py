@@ -1,7 +1,7 @@
 import requests
 def log_execution(func):
     def wrapper(*args, **kwargs):
-        print(f"___ [LOG] Starting execution of: {func.__name__}---")
+        print(f"___ [LOG] Initialising execution of: {func.__name__}---")
         return func(*args, **kwargs)
     return wrapper
 
